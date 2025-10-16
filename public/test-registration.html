@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Registrazione API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Registrazione API</h1>
+    <p>Questo file testa direttamente l'endpoint API di registrazione.</p>
+    
+    <button onclick="testRegistration()">Test Registrazione</button>
+    
+    <div id="result"></div>
+
+    <script>
+        async function testRegistration() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>⏳ Invio richiesta...</p>';
+            
+            const username = 'test_user_' + Date.now();
+            const email = 'test' + Date.now() + '@test.com';
+            const password = 'password123';
+            
+            console.log('=== TEST REGISTRAZIONE ===');
+            console.log('Username:', username);
+            console.log('Email:', email);
+            console.log('Password:', password);
+            
+            try {
+                console.log('📤 Invio richiesta a /api/auth/register...');
+                
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        email: email,
+                        password: password
+                    })
+                });
+                
+                console.log('📥 Risposta ricevuta:', response.status, response.statusText);
+                
+                const data = await response.json();
+                console.log('📋 Dati risposta:', data);
+                
+                if (response.ok && data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <h3>✅ Registrazione riuscita!</h3>
+                            <p><strong>ID:</strong> ${data.data.user.id}</p>
+                            <p><strong>Username:</strong> ${data.data.user.username}</p>
+                            <p><strong>Email:</strong> ${data.data.user.email}</p>
+                            <p><strong>Token JWT:</strong> ${data.data.access_token.substring(0, 50)}...</p>
+                            <h4>Risposta completa:</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h3>❌ Errore registrazione</h3>
+                            <p><strong>Messaggio:</strong> ${data.message}</p>
+                            <h4>Errori:</h4>
+                            <pre>${JSON.stringify(data.errors || {}, null, 2)}</pre>
+                            <h4>Risposta completa:</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('💥 Errore:', error);
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>💥 Errore di rete</h3>
+                        <p>${error.message}</p>
+                        <pre>${error.stack}</pre>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

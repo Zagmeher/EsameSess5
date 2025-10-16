@@ -1,0 +1,24 @@
+{
+    "$schema": "https://json.schemastore.org/package.json",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build && tsc",
+        "tsc": "tsc",
+        "tsc:watch": "tsc --watch"
+    },
+    "devDependencies": {
+        "@popperjs/core": "^2.11.8",
+        "@tailwindcss/vite": "^4.0.0",
+        "@types/bootstrap": "^5.2.10",
+        "axios": "^1.11.0",
+        "bootstrap": "^5.3.8",
+        "concurrently": "^9.0.1",
+        "laravel-vite-plugin": "^2.0.0",
+        "rxjs": "^7.8.2",
+        "tailwindcss": "^4.0.0",
+        "typescript": "^5.9.3",
+        "vite": "^7.0.7"
+    }
+}

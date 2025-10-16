@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Login API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        .test-container {
+            background: #2a2a2a;
+            padding: 30px;
+            border-radius: 10px;
+            border: 2px solid #dc143c;
+        }
+        h1 {
+            color: #dc143c;
+        }
+        input, button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #444;
+            background: #333;
+            color: white;
+            font-size: 16px;
+        }
+        button {
+            background: #dc143c;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #ff0000;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success {
+            background: #1a4d1a;
+            border: 1px solid #28a745;
+        }
+        .error {
+            background: #4d1a1a;
+            border: 1px solid #dc143c;
+        }
+        .info {
+            background: #1a1a4d;
+            border: 1px solid #17a2b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Test API Login</h1>
+        <p>Testa l'endpoint /api/auth/login</p>
+        
+        <label>Email:</label>
+        <input type="email" id="email" value="angelo@angelo.it" placeholder="Inserisci email">
+        
+        <label>Password:</label>
+        <input type="password" id="password" value="123456" placeholder="Inserisci password">
+        
+        <button onclick="testLogin()">🚀 Test Login</button>
+        <button onclick="testWrongPassword()" style="background: #8b0000;">❌ Test Password Errata</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const resultDiv = document.getElementById('result');
+
+        function showResult(type, message, data = null) {
+            resultDiv.className = type;
+            let output = message + '\n';
+            if (data) {
+                output += '\n' + JSON.stringify(data, null, 2);
+            }
+            resultDiv.textContent = output;
+        }
+
+        async function testLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            showResult('info', '⏳ Invio richiesta...');
+
+            try {
+                console.log('🚀 Chiamata API:', {
+                    url: '/api/auth/login',
+                    email: email,
+                    password: '***'
+                });
+
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                });
+
+                console.log('📡 Status:', response.status);
+
+                const result = await response.json();
+                console.log('📥 Risposta:', result);
+
+                if (response.ok && result.success) {
+                    showResult('success', '✅ LOGIN RIUSCITO!', result);
+                    
+                    // Salva token
+                    localStorage.setItem('app_access_token', result.data.access_token);
+                    console.log('🔑 Token salvato!');
+                } else {
+                    showResult('error', '❌ LOGIN FALLITO!', result);
+                }
+
+            } catch (error) {
+                showResult('error', '💥 ERRORE DI RETE!', {
+                    error: error.message,
+                    stack: error.stack
+                });
+                console.error('Errore:', error);
+            }
+        }
+
+        async function testWrongPassword() {
+            document.getElementById('password').value = 'password_sbagliata_123';
+            await testLogin();
+        }
+
+        // Test automatico al caricamento
+        window.addEventListener('load', function() {
+            console.log('✅ Pagina test caricata');
+            console.log('📍 URL corrente:', window.location.href);
+        });
+    </script>
+</body>
+</html>

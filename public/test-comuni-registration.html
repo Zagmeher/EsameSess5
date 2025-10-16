@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Registrazione con Comune</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-dark text-white">
+    <div class="container mt-5">
+        <h1>Test Registrazione con Comune</h1>
+        <div class="card bg-secondary mt-4">
+            <div class="card-body">
+                <h5>Test 1: Carica Comuni</h5>
+                <button class="btn btn-primary" onclick="testLoadComuni()">Carica Comuni</button>
+                <div id="comuniResult" class="mt-3"></div>
+            </div>
+        </div>
+        
+        <div class="card bg-secondary mt-4">
+            <div class="card-body">
+                <h5>Test 2: Registra Utente con Comune</h5>
+                <form id="testForm">
+                    <div class="mb-3">
+                        <label>Username</label>
+                        <input type="text" class="form-control" id="testUsername" value="testuser123" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>Email</label>
+                        <input type="email" class="form-control" id="testEmail" value="test@test.com" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>Password</label>
+                        <input type="password" class="form-control" id="testPassword" value="password123" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>Comune</label>
+                        <select class="form-control" id="testComune" required>
+                            <option value="">Seleziona...</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success">Registra</button>
+                </form>
+                <div id="registerResult" class="mt-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function testLoadComuni() {
+            const resultDiv = document.getElementById('comuniResult');
+            resultDiv.innerHTML = '<div class="spinner-border"></div> Caricamento...';
+            
+            try {
+                const response = await fetch('/api/comuni');
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultDiv.innerHTML = `
+                        <div class="alert alert-success">
+                            ✅ Caricati ${result.data.length} comuni!<br>
+                            Primi 5: ${result.data.slice(0, 5).map(c => c.nome).join(', ')}
+                        </div>
+                    `;
+                    
+                    // Popola il select per il test
+                    const select = document.getElementById('testComune');
+                    select.innerHTML = '<option value="">Seleziona...</option>';
+                    result.data.slice(0, 100).forEach(comune => {
+                        const option = document.createElement('option');
+                        option.value = comune.id;
+                        option.textContent = `${comune.nome} (${comune.provincia})`;
+                        select.appendChild(option);
+                    });
+                } else {
+                    resultDiv.innerHTML = '<div class="alert alert-danger">❌ Errore</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="alert alert-danger">❌ ${error.message}</div>`;
+            }
+        }
+
+        document.getElementById('testForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const resultDiv = document.getElementById('registerResult');
+            resultDiv.innerHTML = '<div class="spinner-border"></div> Registrazione...';
+            
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        username: document.getElementById('testUsername').value,
+                        email: document.getElementById('testEmail').value,
+                        password: document.getElementById('testPassword').value,
+                        comune_id: document.getElementById('testComune').value
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultDiv.innerHTML = `
+                        <div class="alert alert-success">
+                            ✅ Utente registrato con successo!<br>
+                            Username: ${result.data.user.username}<br>
+                            Email: ${result.data.user.email}<br>
+                            Token ricevuto: ${result.data.access_token.substring(0, 50)}...
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="alert alert-danger">
+                            ❌ ${result.message}<br>
+                            ${JSON.stringify(result.errors || {})}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="alert alert-danger">❌ ${error.message}</div>`;
+            }
+        });
+
+        // Carica comuni automaticamente
+        window.addEventListener('load', testLoadComuni);
+    </script>
+</body>
+</html>

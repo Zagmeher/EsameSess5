@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Login - Messaggi Errore Specifici</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d0a0a 50%, #1a1a1a 100%);
+            min-height: 100vh;
+            padding: 50px 0;
+        }
+        .test-card {
+            background: rgba(20, 20, 20, 0.95);
+            border: 1px solid rgba(220, 20, 60, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        .test-title {
+            color: #dc143c;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .test-description {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 15px;
+        }
+        .btn-test {
+            background: linear-gradient(135deg, #dc143c 0%, #8b0000 100%);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        .btn-test:hover {
+            background: linear-gradient(135deg, #ff0000 0%, #dc143c 100%);
+            color: white;
+        }
+        .result-box {
+            background: rgba(30, 30, 30, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            color: white;
+            font-family: monospace;
+        }
+        .success-msg {
+            color: #28a745;
+        }
+        .error-msg {
+            color: #dc143c;
+        }
+        .info-msg {
+            color: #17a2b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center text-white mb-5">
+            🧪 Test Login - Messaggi di Errore Specifici
+        </h1>
+
+        <!-- Test 1: Utente Inesistente -->
+        <div class="test-card">
+            <h3 class="test-title">Test 1: Utente Inesistente</h3>
+            <p class="test-description">
+                Tenta il login con un'email che non esiste nel database.<br>
+                <strong>Risultato atteso:</strong> "Utente non esistente"
+            </p>
+            <button class="btn btn-test" onclick="testNonExistentUser()">
+                ▶️ Esegui Test 1
+            </button>
+            <div id="result1" class="result-box" style="display: none;"></div>
+        </div>
+
+        <!-- Test 2: Password Errata -->
+        <div class="test-card">
+            <h3 class="test-title">Test 2: Password Errata</h3>
+            <p class="test-description">
+                Prima crea un utente, poi tenta il login con password sbagliata.<br>
+                <strong>Risultato atteso:</strong> "Password errata"
+            </p>
+            <button class="btn btn-test" onclick="testWrongPassword()">
+                ▶️ Esegui Test 2
+            </button>
+            <div id="result2" class="result-box" style="display: none;"></div>
+        </div>
+
+        <!-- Test 3: Login Corretto -->
+        <div class="test-card">
+            <h3 class="test-title">Test 3: Login Corretto</h3>
+            <p class="test-description">
+                Crea un utente e tenta il login con credenziali corrette.<br>
+                <strong>Risultato atteso:</strong> "Login effettuato con successo"
+            </p>
+            <button class="btn btn-test" onclick="testSuccessfulLogin()">
+                ▶️ Esegui Test 3
+            </button>
+            <div id="result3" class="result-box" style="display: none;"></div>
+        </div>
+
+        <!-- Test 4: Test Manuale -->
+        <div class="test-card">
+            <h3 class="test-title">Test 4: Test Manuale</h3>
+            <p class="test-description">
+                Inserisci manualmente le credenziali per testare
+            </p>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="text-white">Email</label>
+                    <input type="email" class="form-control" id="manualEmail" placeholder="email@esempio.com">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="text-white">Password</label>
+                    <input type="password" class="form-control" id="manualPassword" placeholder="password">
+                </div>
+            </div>
+            <button class="btn btn-test" onclick="testManualLogin()">
+                ▶️ Test Login Manuale
+            </button>
+            <div id="result4" class="result-box" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+
+        function showResult(resultId, message, type = 'info') {
+            const resultDiv = document.getElementById(resultId);
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `<span class="${type}-msg">${message}</span>`;
+        }
+
+        // Test 1: Utente Inesistente
+        async function testNonExistentUser() {
+            showResult('result1', '⏳ Esecuzione test in corso...', 'info');
+            
+            try {
+                const response = await fetch(`${API_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'utente.inesistente@test.com',
+                        password: 'password123'
+                    })
+                });
+
+                const result = await response.json();
+                
+                let message = `
+                    Status: ${response.status}<br>
+                    Messaggio: "${result.message}"<br>
+                    Success: ${result.success}<br>
+                    <br>
+                    ✅ Test ${result.message === 'Utente non esistente' ? 'SUPERATO' : 'FALLITO'}!
+                `;
+                
+                showResult('result1', message, result.message === 'Utente non esistente' ? 'success' : 'error');
+                
+            } catch (error) {
+                showResult('result1', `❌ Errore: ${error.message}`, 'error');
+            }
+        }
+
+        // Test 2: Password Errata
+        async function testWrongPassword() {
+            showResult('result2', '⏳ Step 1/2: Creazione utente...', 'info');
+            
+            try {
+                // Step 1: Crea un utente
+                const timestamp = Date.now();
+                const testEmail = `test${timestamp}@password.test`;
+                const testUsername = `testuser${timestamp}`;
+                const correctPassword = 'password123';
+                
+                // Cerca un comune casuale per il test
+                const comuniResponse = await fetch(`${API_URL}/api/comuni`);
+                const comuniData = await comuniResponse.json();
+                const randomComune = comuniData.data[Math.floor(Math.random() * comuniData.data.length)];
+                
+                const registerResponse = await fetch(`${API_URL}/api/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        username: testUsername,
+                        email: testEmail,
+                        password: correctPassword,
+                        comune_id: randomComune.id
+                    })
+                });
+
+                if (!registerResponse.ok) {
+                    throw new Error('Impossibile creare utente di test');
+                }
+
+                showResult('result2', '⏳ Step 2/2: Test login con password errata...', 'info');
+
+                // Step 2: Tenta login con password sbagliata
+                const loginResponse = await fetch(`${API_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: testEmail,
+                        password: 'passwordSBAGLIATA123'
+                    })
+                });
+
+                const loginResult = await loginResponse.json();
+                
+                let message = `
+                    Utente creato: ${testEmail}<br>
+                    Password corretta: ${correctPassword}<br>
+                    Password testata: passwordSBAGLIATA123<br>
+                    <br>
+                    Status: ${loginResponse.status}<br>
+                    Messaggio: "${loginResult.message}"<br>
+                    Success: ${loginResult.success}<br>
+                    <br>
+                    ✅ Test ${loginResult.message === 'Password errata' ? 'SUPERATO' : 'FALLITO'}!
+                `;
+                
+                showResult('result2', message, loginResult.message === 'Password errata' ? 'success' : 'error');
+                
+            } catch (error) {
+                showResult('result2', `❌ Errore: ${error.message}`, 'error');
+            }
+        }
+
+        // Test 3: Login Corretto
+        async function testSuccessfulLogin() {
+            showResult('result3', '⏳ Step 1/2: Creazione utente...', 'info');
+            
+            try {
+                // Step 1: Crea un utente
+                const timestamp = Date.now();
+                const testEmail = `success${timestamp}@test.com`;
+                const testUsername = `successuser${timestamp}`;
+                const correctPassword = 'password123';
+                
+                // Cerca un comune casuale per il test
+                const comuniResponse = await fetch(`${API_URL}/api/comuni`);
+                const comuniData = await comuniResponse.json();
+                const randomComune = comuniData.data[Math.floor(Math.random() * comuniData.data.length)];
+                
+                const registerResponse = await fetch(`${API_URL}/api/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        username: testUsername,
+                        email: testEmail,
+                        password: correctPassword,
+                        comune_id: randomComune.id
+                    })
+                });
+
+                if (!registerResponse.ok) {
+                    throw new Error('Impossibile creare utente di test');
+                }
+
+                showResult('result3', '⏳ Step 2/2: Test login con credenziali corrette...', 'info');
+
+                // Step 2: Login con credenziali corrette
+                const loginResponse = await fetch(`${API_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: testEmail,
+                        password: correctPassword
+                    })
+                });
+
+                const loginResult = await loginResponse.json();
+                
+                let message = `
+                    Utente creato: ${testEmail}<br>
+                    Password: ${correctPassword}<br>
+                    <br>
+                    Status: ${loginResponse.status}<br>
+                    Messaggio: "${loginResult.message}"<br>
+                    Success: ${loginResult.success}<br>
+                    Username: ${loginResult.data?.user?.username || 'N/A'}<br>
+                    Token ricevuto: ${loginResult.data?.access_token ? 'Sì' : 'No'}<br>
+                    <br>
+                    ✅ Test ${loginResult.success && loginResult.message === 'Login effettuato con successo' ? 'SUPERATO' : 'FALLITO'}!
+                `;
+                
+                showResult('result3', message, loginResult.success ? 'success' : 'error');
+                
+            } catch (error) {
+                showResult('result3', `❌ Errore: ${error.message}`, 'error');
+            }
+        }
+
+        // Test 4: Login Manuale
+        async function testManualLogin() {
+            const email = document.getElementById('manualEmail').value;
+            const password = document.getElementById('manualPassword').value;
+
+            if (!email || !password) {
+                showResult('result4', '❌ Inserisci email e password', 'error');
+                return;
+            }
+
+            showResult('result4', '⏳ Test in corso...', 'info');
+            
+            try {
+                const response = await fetch(`${API_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                });
+
+                const result = await response.json();
+                
+                let message = `
+                    Email testata: ${email}<br>
+                    Status: ${response.status}<br>
+                    Messaggio: "${result.message}"<br>
+                    Success: ${result.success}<br>
+                `;
+
+                if (result.success) {
+                    message += `<br>Username: ${result.data.user.username}<br>Token ricevuto: Sì`;
+                }
+                
+                showResult('result4', message, result.success ? 'success' : 'error');
+                
+            } catch (error) {
+                showResult('result4', `❌ Errore: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

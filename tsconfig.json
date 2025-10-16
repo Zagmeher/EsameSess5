@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "rootDir": "./resources/ts",
+    "outDir": "./public/js",
+    "module": "es2015",
+    "target": "es6",
+    "lib": ["es6", "dom"],
+    "sourceMap": true,
+    "strict": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["resources/ts/**/*"],
+  "exclude": ["node_modules"]
+}
